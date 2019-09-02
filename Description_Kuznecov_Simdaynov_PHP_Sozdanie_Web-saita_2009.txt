@@ -1,0 +1,145 @@
+Кузнецов М.В., Симдянов И.В. - PHP. Практика создания Web-сайтов (2-е издание) - 2009
+
+1. Стр. 116
+	Создадим первую таблицу базы данных forum, которая называется authors и содержит различные данные о зарегистрированных посетителях 
+	форума:
+		ник (name);
+		пароль (passw);
+		e-mail (email);
+		Web-адрес сайта посетителя (url);
+		номер ICQ (icq);
+		сведения о посетителе (about);
+		строку, содержащую путь к файлу фотографии посетителя (photo);
+		время добавления запроса (putdate);
+		последнее время посещения форума (last_time);
+		статус посетителя (statususer) - является ли он модератором ('moderator'), администратором ('admin') или обычным посетителем 
+		('user')
+		Кроме перечисленных полей в таблице имеется поле id_author, представляющее собой первичный ключ таблицы.
+		
+		CREATE TABLE authors (
+		id_author INT(11) NOT NULL AUTO_INCREMENT,
+		name TINYTEXT,
+		passw TINYTEXT,
+		email TINYTEXT,
+		url TEXT,
+		icq TINYTEXT,
+		about TEXT,
+		photo TINYTEXT,
+		putdate DATETIME DEFAULT NULL,
+		last_time DATETIME DEFAULT NULL,
+		themes INT(10) DEFAULT NULL,
+		statususer ENUM('user','moderator','admin') NOT NULL default 'user',
+		PRIMARY KEY (id_author)
+		);
+		
+2. Стр. 118
+	Следующей по порядку идёт таблица forums, в которой содержатся данные о разделах форума.
+	В таблице forums присутствуют следующие поля:
+		первичный ключ (id_forum);
+		название раздела (name);
+		правила форума (rule);
+		краткое описание форума (logo);
+		порядковый номер (pos);
+		флаг (hide) - принимающий значение 'hide', если форум скрытый, и 'show', если он общедоступен.
+		
+		CREATE TABLE forums (
+		id_forum INT(11) NOT NULL AUTO_INCREMENT,
+		name TINYTEXT,
+		rule TEXT,
+		logo TINYTEXT,
+		pos INT(11) DEFAULT NULL,
+		hide ENUM('show','hide') NOT NULL DEFAULT 'show',
+		PRIMARY KEY (id_forum)
+		);
+		
+3. Стр. 118
+	Структура форума может быть следующей: имеется список разделов, переход по которому приводит посетителя 
+	к списку тем раздела. При переходе по теме посетитель приходит к обсуждению этой темы, состоящему из сообщений 
+	других посетителей. Теперь создадим таблицу themes, содержащую темы форума. В таблице themes присутствуют 
+	следующие поля:
+		первичный ключ (id_theme);
+		название темы (name);
+		автор темы (author);
+		внешний ключ к таблице авторов (id_author);
+		флаг (hide) - принимающий значение 'hide', если тема скрыта, и 'show', если она отображается (это поле необходимо 
+		для модерирования);
+		время добавления темы (putdate);
+		внешний ключ к таблице форумов (id_forum) - для того чтобы определить, к какому разделу форума относится данная тема.
+		
+		CREATE TABLE themes (
+		id_theme INT(11) NOT NULL AUTO_INCREMENT,
+		name TINYTEXT,
+		author TINYTEXT,
+		id_author INT(11) DEFAULT NULL,
+		hide ENUM('show','hide') NOT NULL DEFAULT 'show',
+		putdate DATETIME DEFAULT NULL,
+		id_forum INT(11) default NULL,
+		PRIMARY KEY (id_theme)
+		);
+	
+4. Стр. 119
+	Создадим последнюю таблицу posts, в которой будут храниться сообщения. В таблице posts присутствуют следующие поля:
+		первичный ключ (id_post);
+		тело сообщения (name);
+		необязательная ссылка на ресурс, которую автор сообщения может ввести при добавлении сообщения (url);
+		путь к файлу, прикрепляемому к сообщению (file);
+		имя автора (author);
+		внешний ключ к таблице авторов (id_author);
+		флаг (hide) - принимающий значение 'hide', если сообщение скрытое, и 'show', если оно отображается (это поле 
+		необходимо для модерирования);
+		время добавления сообщения (putdate);
+		сообщение, ответом на которое является данное сообщение (parent_post): если это первое сообщение в теме, то поле 
+		равно 0;
+		внешний ключ к теме (id_theme), указывающий, к какой теме относится сообщение.
+	
+		CREATE TABLE posts (
+		id_post INT(11) NOT NULL AUTO_INCREMENT,
+		name TINYTEXT,
+		url TEXT,
+		file TINYTEXT,
+		author TINYTEXT,
+		id_author INT(11) DEFAULT NULL,
+		hide ENUM('show','hide') NOT NULL DEFAULT 'show',
+		putdate DATETIME DEFAULT NULL,
+		parent_post INT(11) DEFAULT NULL,
+		id_theme INT(11) DEFAULT NULL,
+		PRIMARY KEY (id_post)
+		);
+	
+5. Стр. 236
+	Создадим систему базовой аутентификации, логин и пароль для которой будет храниться в таблице userslist
+		
+		CREATE TABLE userslist (
+			id_user INT(11) NOT NULL AUTO_INCREMENT,
+			name TINYTEXT NOT NULL,
+			pass TINYTEXT NOT NULL,
+			PRIMARY KEY (id_user)
+		);
+		INSERT INTO userslist VALUES (NULL, 'root', MD5('root'));
+		
+6. Стр. 345
+	5.4. SQL-инъекции (Пример: База данных cdcol)
+		Пусть имеется таблица пользователей userslist, которая содержит пять столбцов:
+			id_user - первичный ключ таблицы, обладающий атрибутом AUTO_INCREMENT;
+			name - имя пользователя;
+			pass - его пароль;
+			email - адрес электронной почты пользователя;
+			url - адрес домашней страницы пользователя.
+		
+		CREATE TABLE userslist (
+			id_user INT(11) NOT NULL AUTO_INCREMENT,
+			name TINYTEXT NOT NULL,
+			pass TINYTEXT NOT NULL,
+			email TINYTEXT NOT NULL,
+			url TINYTEXT NOT NULL,
+			PRIMARY KEY (id_user)
+		);
+		INSERT INTO userslist VALUES
+		(1, 'cheops', 'cheops_pass', 'cheops@mail.ru', 'http://www.softtime.ru'),
+		(2, 'barton', 'dwert', 'barton@mail.ru', ''),
+		(3, 'Gordon', '123', '', ''),
+		(4, 'tester', 'test', '', ''),
+		(5, 'Чиф', 'gfhjkm', 'kuznetsov@softtime.ru', 'http://www.softtime.ru'),
+		(6, 'yandex', 'zyltrc', 'yandex@mail.ru', 'http://www.yadex.ru');
+
+7. 
